@@ -1,0 +1,15 @@
+<launch>    
+    <!-- Launch file for NMEA sentence parser, with GPS and depth information from Lowrance side-scanner -->
+    
+    <!-- UDP address and port -->
+    <arg name="addr" default="" />
+    <arg name="prt" default="12021" />
+    <arg name="frame" default="lowrance" />
+    
+    <!-- Run UDP node -->
+    <node name="nmea_depth_udp" pkg="nmea_depth" type="nmea_depth_udp.py" output="screen" >
+        <param name="udp/address" value="$(arg addr)" />
+        <param name="udp/port" value="$(arg prt)" />
+        <param name="frame_id" value="$(arg frame)" />
+    </node>
+</launch>
