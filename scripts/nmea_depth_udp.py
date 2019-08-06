@@ -4,6 +4,7 @@ from nmea_depth.msg import DepthBelowTransducer, DepthOfWater
 from nmea_msgs.msg import Sentence
 import signal
 import socket
+import rosparam
 import rospy
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import TimeReference
@@ -29,9 +30,9 @@ def nmea_depth_udp():
     rate = rospy.Rate(10)   # 10 Hz
 
     # Parameters
-    udp_addr = rospy.get_param('/nmea_depth_udp/udp/address', default='')
-    udp_port = rospy.get_param('/nmea_depth_udp/udp/port', default=12021)     # Random palindrome port
-    device_frame_id = rospy.get_param('/nmea_depth_udp/frame_id', default="")
+    udp_addr = rospy.get_param('~address', '')
+    udp_port = rospy.get_param('~port', 12021)     # Random palindrome port
+    device_frame_id = rospy.get_param('~frame_id', "")
     
     # Start UDP socket (defaults to any IP and port 12021)
     udp_in.bind((udp_addr, udp_port))
