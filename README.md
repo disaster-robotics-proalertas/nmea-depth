@@ -53,7 +53,11 @@ UDP address for source of NMEA sentences. Default is none, as the UDP socket sho
 
 * ~udp/port (int, default: 12021)
 
-UDP port for source of NMEA sentences. Default is a random palindrome number, **you must change this parameter to reflect the inbound UDP connection with your device.**
+UDP port for source of NMEA sentences. Default is a random palindrome number, **you must change this parameter to reflect the inbound UDP connection with your device.** You can do this either by modifying the [ROS launch file](https://github.com/rgmaidana/nmea-depth/blob/master/launch/lowrance.launch) or by specifying this parameter when using *rosrun*:
+
+```
+rosrun nmea_depth nmea_depth_udp.py _port:=<your_UDP_port>
+```
 
 * ~frame_id (string, default: None)
 
