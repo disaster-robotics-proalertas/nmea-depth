@@ -3,8 +3,8 @@ ROS package to parse NMEA GPS and Depth sentences, obtained from a Lowrance SL2 
 The package currently contains one [node](https://github.com/rgmaidana/nmea-depth/blob/master/scripts/nmea_depth_udp.py), which receives the NMEA sentences via UDP.
 As there are no standard messages for NMEA depth sentences, two new message types are defined:
 
-* [DepthOfWater.msg](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthOfWater.msg): [DPT sentence](https://gpsd.gitlab.io/gpsd/NMEA.html#_dpt_depth_of_water)
-* [DepthBelowTransducer.msg](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthBelowTransducer.msg): [DBT sentence](https://gpsd.gitlab.io/gpsd/NMEA.html#_dbt_depth_below_transducer)
+* [DepthOfWater.msg](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthOfWater.msg): Following the [DPT sentence](https://gpsd.gitlab.io/gpsd/NMEA.html#_dpt_depth_of_water)
+* [DepthBelowTransducer.msg](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthBelowTransducer.msg): Following the [DBT sentence](https://gpsd.gitlab.io/gpsd/NMEA.html#_dbt_depth_below_transducer)
 
 Partly based on code from [this](https://github.com/rolker/seapath/blob/master/nodes/seapath_nmea_node.py) ROS node.
 
