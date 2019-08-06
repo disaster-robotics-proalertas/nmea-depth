@@ -47,11 +47,11 @@ For example, if running the [lowrance](https://github.com/rgmaidana/nmea-depth/b
 
 ## Parameters
 
-* ~udp/address (string, default: None)
+* ~address (string, default: None)
 
 UDP address for source of NMEA sentences. Default is none, as the UDP socket should accept messages from all IP addresses (multicast).
 
-* ~udp/port (int, default: 12021)
+* ~port (int, default: 12021)
 
 UDP port for source of NMEA sentences. Default is a random palindrome number, **you must change this parameter to reflect the inbound UDP connection with your device.** You can do this either by modifying the [ROS launch file](https://github.com/rgmaidana/nmea-depth/blob/master/launch/lowrance.launch) or by specifying this parameter when using *rosrun*:
 
