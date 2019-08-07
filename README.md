@@ -45,7 +45,7 @@ For example, if running the [lowrance](https://github.com/rgmaidana/nmea-depth/b
 * <frame_id>/gps/active_satellites ([nmea_msgs/Gpgsa](http://docs.ros.org/api/nmea_msgs/html/msg/Gpgsa.html)): GPS Dillution of Position (DOP) and active satellite data
 * <frame_id>/gps/satellites_in_view ([nmea_msgs/Gpgsv](http://docs.ros.org/api/nmea_msgs/html/msg/Gpgsv.html)): Information on all GPS satellites currently in view, specifically PRN, elevation angle, azimuth angle and signal-to-noise ratio
 * <frame_id>/depth/water ([nmea_depth/DepthOfWater](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthOfWater.msg)): Depth of water column, following the [DPT](https://gpsd.gitlab.io/gpsd/NMEA.html#_dpt_depth_of_water) NMEA sentence
-* <frame_id>/depth/water ([nmea_depth/DepthBelowTransducer](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthBelowTransducer.msg)): Depth of water column, following the [DBT](https://gpsd.gitlab.io/gpsd/NMEA.html#_dbt_depth_below_transducer) NMEA sentence
+* <frame_id>/depth/below_transducer ([nmea_depth/DepthBelowTransducer](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthBelowTransducer.msg)): Depth of water column, following the [DBT](https://gpsd.gitlab.io/gpsd/NMEA.html#_dbt_depth_below_transducer) NMEA sentence
 
 ## Parameters
 
