@@ -55,6 +55,8 @@ add_message_files(
   FILES
   DepthBelowTransducer.msg
   DepthOfWater.msg
+  WaterHeadingSpeed.msg
+  MagneticHeading.msg
 )
 
 ## Generate services in the 'srv' folder
