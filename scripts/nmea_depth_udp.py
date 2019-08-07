@@ -171,49 +171,33 @@ def nmea_depth_udp():
             # GPS Satellites in View
             if nmea_parts[0] == '$GPGSV' and len(nmea_parts) >= 7:
                 # Typically GPGSV messages come in sequences, run and obtain messages from UDP until last message in sequence arrives
-                while True:
-                    gsv = Gpgsv()
-                    gsv.header.frame_id = device_frame_id
-                    gsv.header.stamp = ros_now
-                    gsv.n_msgs = cast_int(nmea_parts[1])
-                    gsv.msg_number = cast_int(nmea_parts[2])
-                    gsv.n_satellites = cast_int(nmea_parts[3])
-                    i = 4   # Satellite information comes in quadruples until sentence end
-                    while i < len(nmea_parts):
-                        gsv_sat = GpgsvSatellite()
-                        try:
-                            gsv_sat.prn = int(nmea_parts[i])
-                        except ValueError:
-                            pass
-                        try:
-                            gsv_sat.elevation = int(nmea_parts[i+1])
-                        except ValueError:
-                            pass
-                        try:
-                            gsv_sat.azimuth = int(nmea_parts[i+2])
-                        except ValueError:
-                            pass
-                        try:
-                            gsv_sat.snr = int(nmea_parts[i+3].split("*")[0])
-                        except ValueError:
-                            pass
-
-                        gsv.satellites.append(gsv_sat)
-                        i += 4
-
-                    sat_view_pub.publish(gsv)
-
-                    # If this message is the last in sequence, break
-                    if gsv.n_msgs == gsv.msg_number:
-                        break
-                    # If not, obtain next NMEA sentence
-                    else:
-                        try:
-                            nmea_in, _ = udp_in.recvfrom(1024)        
-                        except socket.error:
-                            pass
-                        ros_now = rospy.Time().now()   
-                        nmea_parts = nmea_in.strip().split(',')
+                gsv = Gpgsv()
+                gsv.header.frame_id = device_frame_id
+                gsv.header.stamp = ros_now
+                gsv.n_msgs = cast_int(nmea_parts[1])
+                gsv.msg_number = cast_int(nmea_parts[2])
+                gsv.n_satellites = cast_int(nmea_parts[3])
+                for i in range(4, len(nmea_parts), 4):
+                    gsv_sat = GpgsvSatellite()
+                    try:
+                        gsv_sat.prn = int(nmea_parts[i])
+                    except ValueError:
+                        pass
+                    try:
+                        gsv_sat.elevation = int(nmea_parts[i+1])
+                    except ValueError:
+                        pass
+                    try:
+                        gsv_sat.azimuth = int(nmea_parts[i+2])
+                    except ValueError:
+                        pass
+                    try:
+                        gsv_sat.snr = int(nmea_parts[i+3].split("*")[0])
+                    except ValueError:
+                        pass
+                    gsv.satellites.append(gsv_sat)
+                    
+                sat_view_pub.publish(gsv)
             
             #### Side-scanner
             # Depth (DBT - Depth Below Transducer)
