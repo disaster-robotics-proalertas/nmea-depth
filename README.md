@@ -1,5 +1,5 @@
 # NMEA depth to ROS (ros_nmea_depth package)
-ROS package to parse NMEA GPS and Depth sentences, obtained from a Lowrance SL2 side-scanner, into ROS topics.
+ROS package to parse NMEA GPS and Depth sentences, obtained from a [Lowrance Elite 5-TI](https://www.lowrance.com/lowrance/type/fishfinders-chartplotters/elite-5-ti-no-xdcr) side-scanner, into ROS topics.
 The package currently contains one [node](https://github.com/rgmaidana/nmea-depth/blob/master/scripts/nmea_depth_udp.py), which receives the NMEA sentences via UDP.
 As there are no standard messages for NMEA depth sentences, two new message types are defined:
 
