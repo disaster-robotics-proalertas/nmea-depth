@@ -35,13 +35,15 @@ Alternatively, a [ROS launch file](https://github.com/rgmaidana/nmea-depth/blob/
 
 ## Published Topics
 
-All topics are published relative the device's namespace, referred here by the *frame_id* parameter.
-For example, if running the [lowrance](https://github.com/rgmaidana/nmea-depth/blob/master/launch/lowrance.launch) launch file, the frame_id will be *lowrance*, and thus the NMEA sentence topic will be */lowrance/nmea_sentence*.
+All topics are published relative the device's namespace, referred here by the *frame_id* parameter, and the sensor where the data is obtained.
+For example, if running the [lowrance](https://github.com/rgmaidana/nmea-depth/blob/master/launch/lowrance.launch) launch file, the frame_id will be *lowrance*, and thus the GPS time reference topic will be */lowrance/gps/time_reference*.
 
 * <frame_id>/nmea_sentence ([nmea_msgs/Sentence](http://docs.ros.org/api/nmea_msgs/html/msg/Sentence.html)): A message representing a single NMEA0183 sentence
-* <frame_id>/fix ([sensor_msgs/NavSatFix](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/NavSatFix.html)): GPS Position Fix information (WGS84)
-* <frame_id>/vel ([geometry_msgs/TwistStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/TwistStamped.html)): GPS reported ground speed (in m/s)
-* <frame_id>/time_reference ([sensor_msgs/TimeReference](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/TimeReference.html)): Time reference in GPS time (GPST)
+* <frame_id>/gps/fix ([sensor_msgs/NavSatFix](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/NavSatFix.html)): GPS Position Fix information (WGS84)
+* <frame_id>/gps/vel ([geometry_msgs/TwistStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/TwistStamped.html)): GPS reported ground speed (in m/s)
+* <frame_id>/gps/time_reference ([sensor_msgs/TimeReference](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/TimeReference.html)): Time reference in GPS time (GPST)
+* <frame_id>/gps/active_satellites ([nmea_msgs/Gpgsa](http://docs.ros.org/api/nmea_msgs/html/msg/Gpgsa.html)): GPS Dillution of Position (DOP) and active satellite data
+* <frame_id>/gps/satellites_in_view ([nmea_msgs/Gpgsv](http://docs.ros.org/api/nmea_msgs/html/msg/Gpgsv.html)): Information on all GPS satellites currently in view, specifically PRN, elevation angle, azimuth angle and signal-to-noise ratio
 * <frame_id>/depth/water ([nmea_depth/DepthOfWater](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthOfWater.msg)): Depth of water column, following the [DPT](https://gpsd.gitlab.io/gpsd/NMEA.html#_dpt_depth_of_water) NMEA sentence
 * <frame_id>/depth/water ([nmea_depth/DepthBelowTransducer](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthBelowTransducer.msg)): Depth of water column, following the [DBT](https://gpsd.gitlab.io/gpsd/NMEA.html#_dbt_depth_below_transducer) NMEA sentence
 
