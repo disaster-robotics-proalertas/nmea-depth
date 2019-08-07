@@ -290,11 +290,7 @@ def nmea_depth_udp():
                 hdg.quaternion.z = quat[2]
                 hdg.quaternion.w = quat[3]
                 mag_heading_pub.publish(hdg)
-
-            #### Other possible parsings (from Heck's provided logs)
-            # SDMTW - Mean Temperature of Water
-            # SDVHW - Velocity and Heading in Water (velocity in water as knots/kilometers-per-hour, heading is contained in SDHDG message)
-            # SDHDG - magnetic HeaDinG (in degrees, with deviation and variation)
+                
 
             # NMEA Sentence (published regardless of content)
             sentence_msg = Sentence()
