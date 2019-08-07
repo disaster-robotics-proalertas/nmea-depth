@@ -43,7 +43,7 @@ For example, if running the [lowrance](https://github.com/rgmaidana/nmea-depth/b
 * <frame_id>/vel ([geometry_msgs/TwistStamped](http://docs.ros.org/melodic/api/geometry_msgs/html/msg/TwistStamped.html)): GPS reported ground speed (in m/s)
 * <frame_id>/time_reference ([sensor_msgs/TimeReference](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/TimeReference.html)): Time reference in GPS time (GPST)
 * <frame_id>/depth/water ([nmea_depth/DepthOfWater](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthOfWater.msg)): Depth of water column, following the [DPT](https://gpsd.gitlab.io/gpsd/NMEA.html#_dpt_depth_of_water) NMEA sentence
-* <frame_id>/depth/water ([nmea_depth/DepthBelowTransducer](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthBelowTransducer.msg)): Depth of water column, following the [DBT](https://gpsd.gitlab.io/gpsd/NMEA.html#_dbt_depth_below_transducer) NMEA sentence
+* <frame_id>/depth/below_transducer ([nmea_depth/DepthBelowTransducer](https://github.com/rgmaidana/nmea-depth/blob/master/msg/DepthBelowTransducer.msg)): Depth of water column, following the [DBT](https://gpsd.gitlab.io/gpsd/NMEA.html#_dbt_depth_below_transducer) NMEA sentence
 
 ## Parameters
 
