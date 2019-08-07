@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>nmea_depth</name>
+  <name>ros_nmea_depth</name>
   <version>0.0.0</version>
-  <description>The nmea_depth package</description>
+  <description>The ros_nmea_depth package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
