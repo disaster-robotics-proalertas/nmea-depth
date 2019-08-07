@@ -1,16 +1,19 @@
 #!/usr/bin/env python
 
-from ros_nmea_depth.msg import DepthBelowTransducer, DepthOfWater
+# ROS messages and libraries
+from ros_nmea_depth.msg import DepthBelowTransducer, DepthOfWater, WaterHeadingSpeed, MagneticHeading
+from sensor_msgs.msg import NavSatFix, TimeReference, Temperature
 from nmea_msgs.msg import Sentence, Gpgsa, Gpgsv, GpgsvSatellite
-import signal
-import socket
+from geometry_msgs.msg import TwistStamped, Quaternion
 import rosparam
 import rospy
-from sensor_msgs.msg import NavSatFix
-from sensor_msgs.msg import TimeReference
-from geometry_msgs.msg import TwistStamped
+from tf.transformations import quaternion_from_euler
+
+# Python utilities
 import datetime
 import calendar
+import signal
+import socket
 
 # UDP socket
 udp_in = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -72,11 +75,11 @@ def nmea_depth_udp():
     # SDMTW - Mean Temperature of Water
     # SDVHW - Velocity and heading in Water
     # SDHDG - Magnetic heading
-    depth_below_trans_pub = rospy.Publisher("%s/scanner/depth_below_transducer" % device_frame_id, DepthBelowTransducer, queue_size=10)
-    depth_water_pub = rospy.Publisher("%s/scanner/depth_of_water" % device_frame_id, DepthOfWater, queue_size=10)
-    temp_water_pub = rospy.Publisher("%s/scanner/water_temperature" % device_frame_id, DepthOfWater, queue_size=10)
-    water_velocity_pub = rospy.Publisher("%s/scanner/water_velocity" % device_frame_id, DepthOfWater, queue_size=10)
-    mag_heading_pub = rospy.Publisher("%s/scanner/magnetic_heading" % device_frame_id, DepthOfWater, queue_size=10)
+    depth_below_trans_pub = rospy.Publisher("%s/scanner/water/depth_below_transducer" % device_frame_id, DepthBelowTransducer, queue_size=10)
+    depth_water_pub = rospy.Publisher("%s/scanner/water/depth" % device_frame_id, DepthOfWater, queue_size=10)
+    temp_water_pub = rospy.Publisher("%s/scanner/water/temperature" % device_frame_id, Temperature, queue_size=10)
+    water_heading_speed_pub = rospy.Publisher("%s/scanner/water/heading_and_speed" % device_frame_id, WaterHeadingSpeed, queue_size=10)
+    mag_heading_pub = rospy.Publisher("%s/scanner/magnetic_heading" % device_frame_id, MagneticHeading, queue_size=10)
 
     rospy.loginfo("[nmea_depth_udp] Initialization done.")
     # rospy.loginfo("[nmea_depth_udp] Published topics:")
@@ -96,6 +99,7 @@ def nmea_depth_udp():
         nmea_parts = nmea_in.strip().split(',')
 
         if len(nmea_parts):
+            #### GPS
             # GPS Fix position
             if nmea_parts[0] == '$GPGGA' and len(nmea_parts) >= 10:
                 latitude = cast_float(nmea_parts[2][0:2])+cast_float(nmea_parts[2][2:])/60.0
@@ -136,8 +140,12 @@ def nmea_depth_udp():
                 day = cast_int(nmea_parts[2])
                 month = cast_int(nmea_parts[3])
                 year = cast_int(nmea_parts[4])
-                zda = datetime.datetime(year,month,day,hour,minute,second,ms)
-                tref.time_ref = rospy.Time(calendar.timegm(zda.timetuple()),zda.microsecond*1000)
+                try:
+                    zda = datetime.datetime(year,month,day,hour,minute,second,ms)
+                    tref.time_ref = rospy.Time(calendar.timegm(zda.timetuple()),zda.microsecond*1000)
+                except ValueError:
+                    pass
+                
                 tref.source = device_frame_id
                 timeref_pub.publish(tref) 
             
@@ -207,6 +215,7 @@ def nmea_depth_udp():
                         ros_now = rospy.Time().now()   
                         nmea_parts = nmea_in.strip().split(',')
             
+            #### Side-scanner
             # Depth (DBT - Depth Below Transducer)
             if nmea_parts[0] == '$SDDBT' and len(nmea_parts) >= 7:
                 d = DepthBelowTransducer()
@@ -245,13 +254,46 @@ def nmea_depth_udp():
                     pass
                 depth_water_pub.publish(d)
 
-            #### Other possible parsings (from Heck's provided logs)
-            # GPGLL - Geographic Latitude and Longitude (legacy sentence, same info as contained in GPGGA)
-            # GPGSA - Gps dillution of position and active SAtellites
-            # GPGSV - Gps Satellites in View
-            # GPRMC - Recommendec Minimum navigation type C (includes latitude, longitude, speed in knots, date... all info already available on other messages)
             # SDMTW - Mean Temperature of Water
-            # SDVHW - Velocity and Heading in Water (Water speed in knots/kilometers-per-hour and heading in magnetic degrees)
+            if nmea_parts[0] == '$SDMTW' and len(nmea_parts) >= 3:
+                tempC = Temperature()
+                tempC.header.frame_id = device_frame_id
+                tempC.header.stamp = ros_now
+                tempC.temperature = cast_float(nmea_parts[1])
+                temp_water_pub.publish(tempC)
+
+            # SDVHW - Water Heading and Speed
+            if nmea_parts[0] == '$SDVHW' and len(nmea_parts) >= 9:
+                whs = WaterHeadingSpeed()
+                whs.header.frame_id = device_frame_id
+                whs.header.stamp = ros_now
+                whs.true_heading = cast_float(nmea_parts[1])
+                whs.mag_heading = cast_float(nmea_parts[3])
+                whs.knots = cast_float(nmea_parts[5])
+                whs.kmph = cast_float(nmea_parts[7])
+                whs.mps = whs.kmph / 3.6               # Km/h to m/s
+                water_heading_speed_pub.publish(whs)
+
+            # SDHDG - Magnetic heading
+            if nmea_parts[0] == '$SDHDG' and len(nmea_parts) >= 6:
+                hdg = MagneticHeading()
+                hdg.header.frame_id = device_frame_id
+                hdg.header.stamp = ros_now
+                hdg.heading = cast_float(nmea_parts[1])
+                hdg.mag_dev = cast_float(nmea_parts[2])
+                hdg.mag_dev_dir = nmea_parts[3]
+                hdg.mag_var = cast_float(nmea_parts[4])
+                hdg.mag_var_dir = nmea_parts[5].split('*')[0]
+                quat = quaternion_from_euler(0.0, 0.0, cast_float(hdg.heading))
+                hdg.quaternion.x = quat[0]
+                hdg.quaternion.y = quat[1]
+                hdg.quaternion.z = quat[2]
+                hdg.quaternion.w = quat[3]
+                mag_heading_pub.publish(hdg)
+
+            #### Other possible parsings (from Heck's provided logs)
+            # SDMTW - Mean Temperature of Water
+            # SDVHW - Velocity and Heading in Water (velocity in water as knots/kilometers-per-hour, heading is contained in SDHDG message)
             # SDHDG - magnetic HeaDinG (in degrees, with deviation and variation)
 
             # NMEA Sentence (published regardless of content)
