@@ -1,4 +1,4 @@
-# NMEA depth to ROS (nmea_depth package)
+# NMEA depth to ROS (ros_nmea_depth package)
 ROS package to parse NMEA GPS and Depth sentences, obtained from a Lowrance SL2 side-scanner, into ROS topics.
 The package currently contains one [node](https://github.com/rgmaidana/nmea-depth/blob/master/scripts/nmea_depth_udp.py), which receives the NMEA sentences via UDP.
 As there are no standard messages for NMEA depth sentences, two new message types are defined:
@@ -24,7 +24,7 @@ You can run the [UDP node](https://github.com/rgmaidana/nmea-depth/blob/master/s
 
 ```
 roscore &
-rosrun nmea_depth nmea_depth_udp.py
+rosrun ros_nmea_depth nmea_depth_udp.py
 ```
 
 Alternatively, a [ROS launch file](https://github.com/rgmaidana/nmea-depth/blob/master/launch/lowrance.launch) is provided, where the default parameters (see below) are set as:
@@ -56,7 +56,7 @@ UDP address for source of NMEA sentences. Default is none, as the UDP socket sho
 UDP port for source of NMEA sentences. Default is a random palindrome number, **you must change this parameter to reflect the inbound UDP connection with your device.** You can do this either by modifying the [ROS launch file](https://github.com/rgmaidana/nmea-depth/blob/master/launch/lowrance.launch) or by specifying this parameter when using *rosrun*:
 
 ```
-rosrun nmea_depth nmea_depth_udp.py _port:=<your_UDP_port>
+rosrun ros_nmea_depth nmea_depth_udp.py _port:=<your_UDP_port>
 ```
 
 * ~frame_id (string, default: None)
