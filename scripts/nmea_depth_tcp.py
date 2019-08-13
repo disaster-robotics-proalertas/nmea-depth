@@ -98,7 +98,7 @@ def nmea_depth_tcp():
     # Run node
     while not rospy.is_shutdown():
         try:
-            nmea_in, _ = tcp_in.recv(1024)        
+            nmea_in = tcp_in.makefile().readline()        
         except socket.error:
             pass
         ros_now = rospy.Time().now()   
