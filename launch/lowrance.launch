@@ -7,7 +7,7 @@
     <arg name="frame" default="lowrance" />
     
     <!-- Run UDP node -->
-    <node name="nmea_depth_udp" pkg="ros_nmea_depth" type="nmea_depth_udp.py" output="screen" >
+    <node name="nmea_depth_udp" pkg="ros_nmea_depth" type="nmea_depth_tcp.py" output="screen" >
         <param name="udp/address" value="$(arg address)" />
         <param name="udp/port" value="$(arg port)" />
         <param name="frame_id" value="$(arg frame)" />
