@@ -167,6 +167,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
   scripts/nmea_depth_udp.py
+  scripts/nmea_depth_tcp.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
