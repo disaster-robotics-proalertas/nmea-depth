@@ -288,7 +288,7 @@ def nmea_depth_tcp():
             sentence_msg.sentence = nmea_in
             sentence_pub.publish(sentence_msg)
         
-        # Node sleeps for 10 Hz
+        # Node sleeps for some time
         rate.sleep()
 
 if __name__ == '__main__':
