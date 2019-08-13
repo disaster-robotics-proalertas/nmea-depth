@@ -43,12 +43,12 @@ def nmea_depth_tcp():
     # Init node
     rospy.init_node("nmea_depth_tcp", anonymous=True)
     rospy.loginfo("[nmea_depth_tcp] Initializing node...")
-    rate = rospy.Rate(10)   # 10 Hz
 
     # Parameters
     tcp_addr = rospy.get_param('~address', '127.0.0.1')
     tcp_port = rospy.get_param('~port', 10110)     # Lowrance standard port
     device_frame_id = rospy.get_param('~frame_id', "")
+    update_rate = rospy.get_param('~update_rate', 40)   # Measurement comm rate for Lowrance (Hz)
     
     # Connect TCP client to destination
     try:
@@ -85,6 +85,8 @@ def nmea_depth_tcp():
     water_heading_speed_pub = rospy.Publisher("%s/scanner/water/heading_and_speed" % device_frame_id, WaterHeadingSpeed, queue_size=10)
     mag_heading_pub = rospy.Publisher("%s/scanner/magnetic_heading" % device_frame_id, MagneticHeading, queue_size=10)
 
+    rate = rospy.Rate(update_rate)   # Defines the publish rate
+    
     rospy.loginfo("[nmea_depth_tcp] Initialization done.")
     # rospy.loginfo("[nmea_depth_tcp] Published topics:")
     # rospy.loginfo("[nmea_depth_tcp] Sentence:\t\t\t%s/nmea_sentence" % device_frame_id)
