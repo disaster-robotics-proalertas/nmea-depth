@@ -66,19 +66,27 @@ For example, if running the [lowrance](https://github.com/rgmaidana/nmea-depth/b
 
 * ~address (string, default: None)
 
-UDP address for source of NMEA sentences. Default is none, as the UDP socket should accept messages from all IP addresses (multicast).
+IP address for source of NMEA sentences. Default is defined by an environment variable called "SONAR", which must be set before running the launch file:
+
+```
+export SONAR=<your_sonar_ip_address>
+```
 
 * ~port (int, default: 12021)
 
-UDP port for source of NMEA sentences. Default is a random palindrome number, **you must change this parameter to reflect the inbound UDP connection with your device.** You can do this either by modifying the [ROS launch file](https://github.com/rgmaidana/nmea-depth/blob/master/launch/lowrance.launch) or by specifying this parameter when using *rosrun*:
+TCP/UDP port for source of NMEA sentences. Default is a random port, defined by our Lowrance sonar. **You must change this parameter to reflect the inbound connection with your device.** You can do this either by modifying the [ROS launch file](https://github.com/rgmaidana/nmea-depth/blob/master/launch/lowrance.launch) or by specifying this parameter when using *rosrun*. For example, when running the TCP node:
 
 ```
-rosrun ros_nmea_depth nmea_depth_udp.py _port:=<your_UDP_port>
+rosrun ros_nmea_depth nmea_depth_tcp.py _port:=<your_port>
 ```
 
 * ~frame_id (string, default: None)
 
 Name or ID of device which produces the NMEA sentences (e.g., lowrance).
+
+* ~update_rate (int, default: 40)
+
+Rate of publishing NMEA sentences for TCP and UDP nodes. If your sonar transmits NMEA sentences too fast, the TCP/UDP nodes may miss some sentences, and increasing this parameter may prevent these losses. However, be wary of the node's CPU and bandwidth usage, both which may increase with higher publishing frequencies.
 
 ## Contributors
 
