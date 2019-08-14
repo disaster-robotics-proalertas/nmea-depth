@@ -14,16 +14,15 @@ import datetime
 import calendar
 import signal
 import socket
+import sys
 
-# UDP socket
-udp_in = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# Uncomment this line if too many problems with "address already in use"
-udp_in.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# TCP socket
+tcp_in = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Callback to handle keyboard interruption
 def handle_sigint(sig, frame):
-    udp_in.close()      # Close UDP port
-    rospy.loginfo("[nmea_depth_udp] Quitting...")
+    tcp_in.close()      # Close tcp port
+    rospy.loginfo("[nmea_depth_tcp] Quitting...")
     rospy.signal_shutdown(reason="Interrupted")     # Shutdown ROS node
 
 # Utility function to avoid "ValueError" everytime we have to cast a float
@@ -40,19 +39,24 @@ def cast_int(value):
     except ValueError:
         return -1
 
-def nmea_depth_udp():
+def nmea_depth_tcp():
     # Init node
-    rospy.init_node("nmea_depth_udp", anonymous=True)
-    rospy.loginfo("[nmea_depth_udp] Initializing node...")
-    rate = rospy.Rate(10)   # 10 Hz
+    rospy.init_node("nmea_depth_tcp", anonymous=True)
+    rospy.loginfo("[nmea_depth_tcp] Initializing node...")
 
     # Parameters
-    udp_addr = rospy.get_param('~address', '')
-    udp_port = rospy.get_param('~port', 12021)     # Random palindrome port
+    tcp_addr = rospy.get_param('~address', '127.0.0.1')
+    tcp_port = rospy.get_param('~port', 10110)     # Lowrance standard port
     device_frame_id = rospy.get_param('~frame_id', "")
+    update_rate = rospy.get_param('~update_rate', 40)   # Measurement comm rate for Lowrance (Hz)
     
-    # Start UDP socket (defaults to any IP and port 12021)
-    udp_in.bind((udp_addr, udp_port))
+    # Connect TCP client to destination
+    try:
+        tcp_in.connect((tcp_addr, tcp_port))
+    except IOError as exp:
+        rospy.logerr("Socket error: %s" % exp.strerror)
+        rospy.signal_shutdown(reason="Socket error: %s" % exp.strerror)
+        sys.exit(0)
 
     # NMEA Sentence publisher (to publish NMEA sentence regardless of content)
     sentence_pub = rospy.Publisher("%s/nmea_sentence" % device_frame_id, Sentence, queue_size=10)
@@ -81,18 +85,20 @@ def nmea_depth_udp():
     water_heading_speed_pub = rospy.Publisher("%s/scanner/water/heading_and_speed" % device_frame_id, WaterHeadingSpeed, queue_size=10)
     mag_heading_pub = rospy.Publisher("%s/scanner/magnetic_heading" % device_frame_id, MagneticHeading, queue_size=10)
 
-    rospy.loginfo("[nmea_depth_udp] Initialization done.")
-    # rospy.loginfo("[nmea_depth_udp] Published topics:")
-    # rospy.loginfo("[nmea_depth_udp] Sentence:\t\t\t%s/nmea_sentence" % device_frame_id)
-    # rospy.loginfo("[nmea_depth_udp] GPS Fix:\t\t\t%s/fix" % device_frame_id)
-    # rospy.loginfo("[nmea_depth_udp] GPS Velocity:\t\t%s/vel" % device_frame_id)
-    # rospy.loginfo("[nmea_depth_udp] Time Reference:\t\t%s/time_reference" % device_frame_id)
-    # rospy.loginfo("[nmea_depth_udp] Depth of Water:\t\t%s/depth/water" % device_frame_id)
-    # rospy.loginfo("[nmea_depth_udp] Depth below transducer:\t%s/depth/below_transducer" % device_frame_id)
+    rate = rospy.Rate(update_rate)   # Defines the publish rate
+    
+    rospy.loginfo("[nmea_depth_tcp] Initialization done.")
+    # rospy.loginfo("[nmea_depth_tcp] Published topics:")
+    # rospy.loginfo("[nmea_depth_tcp] Sentence:\t\t\t%s/nmea_sentence" % device_frame_id)
+    # rospy.loginfo("[nmea_depth_tcp] GPS Fix:\t\t\t%s/fix" % device_frame_id)
+    # rospy.loginfo("[nmea_depth_tcp] GPS Velocity:\t\t%s/vel" % device_frame_id)
+    # rospy.loginfo("[nmea_depth_tcp] Time Reference:\t\t%s/time_reference" % device_frame_id)
+    # rospy.loginfo("[nmea_depth_tcp] Depth of Water:\t\t%s/depth/water" % device_frame_id)
+    # rospy.loginfo("[nmea_depth_tcp] Depth below transducer:\t%s/depth/below_transducer" % device_frame_id)
     # Run node
     while not rospy.is_shutdown():
         try:
-            nmea_in, _ = udp_in.recvfrom(1024)        
+            nmea_in = tcp_in.makefile().readline()        
         except socket.error:
             pass
         ros_now = rospy.Time().now()   
@@ -170,7 +176,6 @@ def nmea_depth_udp():
 
             # GPS Satellites in View
             if nmea_parts[0] == '$GPGSV' and len(nmea_parts) >= 7:
-                # Typically GPGSV messages come in sequences, run and obtain messages from UDP until last message in sequence arrives
                 gsv = Gpgsv()
                 gsv.header.frame_id = device_frame_id
                 gsv.header.stamp = ros_now
@@ -283,9 +288,9 @@ def nmea_depth_udp():
             sentence_msg.sentence = nmea_in
             sentence_pub.publish(sentence_msg)
         
-        # Node sleeps for 10 Hz
+        # Node sleeps for some time
         rate.sleep()
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, handle_sigint)     # Handles keyboard interrupt
-    nmea_depth_udp()   # Run node
+    nmea_depth_tcp()   # Run node

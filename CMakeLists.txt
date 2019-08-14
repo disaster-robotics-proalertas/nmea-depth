@@ -55,6 +55,8 @@ add_message_files(
   FILES
   DepthBelowTransducer.msg
   DepthOfWater.msg
+  WaterHeadingSpeed.msg
+  MagneticHeading.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -165,6 +167,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
   scripts/nmea_depth_udp.py
+  scripts/nmea_depth_tcp.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -190,11 +193,10 @@ install(PROGRAMS
 # )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
+install(FILES
+    launch/lowrance.launch
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
 #############
 ## Testing ##
