@@ -8,7 +8,7 @@
     <arg name="update_rate" default="40" />
     
     <!-- Run UDP node -->
-    <node name="nmea_depth_udp" pkg="ros_nmea_depth" type="nmea_depth_tcp.py" output="screen" >
+    <node name="nmea_depth_tcp" pkg="ros_nmea_depth" type="nmea_depth_tcp.py" output="screen" >
         <param name="~address" value="$(arg address)" />
         <param name="~port" value="$(arg port)" />
         <param name="~frame_id" value="$(arg frame)" />
