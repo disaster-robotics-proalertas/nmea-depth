@@ -2,6 +2,7 @@
 
 # ROS messages and libraries
 from ros_nmea_depth.msg import DepthBelowTransducer, DepthOfWater, WaterHeadingSpeed, MagneticHeading
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from sensor_msgs.msg import NavSatFix, TimeReference, Temperature
 from nmea_msgs.msg import Sentence, Gpgsa, Gpgsv, GpgsvSatellite
 from geometry_msgs.msg import TwistStamped, Quaternion
@@ -41,13 +42,13 @@ def cast_int(value):
 
 def nmea_depth_tcp():
     # Init node
-    rospy.init_node("nmea_depth_tcp", anonymous=True)
+    system_name = socket.gethostname()
+    rospy.init_node("lowrance_sonar", anonymous=True)
     rospy.loginfo("[nmea_depth_tcp] Initializing node...")
 
     # Parameters
     tcp_addr = rospy.get_param('~address', '127.0.0.1')
     tcp_port = rospy.get_param('~port', 10110)     # Lowrance standard port
-    device_frame_id = rospy.get_param('~frame_id', "")
     update_rate = rospy.get_param('~update_rate', 40)   # Measurement comm rate for Lowrance (Hz)
     
     # Connect TCP client to destination
@@ -59,7 +60,7 @@ def nmea_depth_tcp():
         sys.exit(0)
 
     # NMEA Sentence publisher (to publish NMEA sentence regardless of content)
-    sentence_pub = rospy.Publisher("%s/nmea_sentence" % device_frame_id, Sentence, queue_size=10)
+    sentence_pub = rospy.Publisher("%s/nmea_sentence" % system_name, Sentence, queue_size=10)
     
     # GPS publishers
     # GPGGA - Position
@@ -67,11 +68,11 @@ def nmea_depth_tcp():
     # GPZDA - Time reference (GPST)
     # GPGSA - Active Satellites
     # GPGSV - Satellites in View
-    position_pub = rospy.Publisher("%s/gps/fix" % device_frame_id, NavSatFix, queue_size=10)
-    vel_pub = rospy.Publisher("%s/gps/vel" % device_frame_id, TwistStamped, queue_size=10)
-    timeref_pub = rospy.Publisher("%s/gps/time_reference" % device_frame_id, TimeReference, queue_size=10)
-    active_sat_pub = rospy.Publisher("%s/gps/active_satellites" % device_frame_id, Gpgsa, queue_size=10)
-    sat_view_pub = rospy.Publisher("%s/gps/satellites_in_view" % device_frame_id, Gpgsv, queue_size=10)
+    position_pub = rospy.Publisher("%s/gps/fix" % system_name, NavSatFix, queue_size=10)
+    vel_pub = rospy.Publisher("%s/gps/vel" % system_name, TwistStamped, queue_size=10)
+    timeref_pub = rospy.Publisher("%s/gps/time_reference" % system_name, TimeReference, queue_size=10)
+    active_sat_pub = rospy.Publisher("%s/gps/active_satellites" % system_name, Gpgsa, queue_size=10)
+    sat_view_pub = rospy.Publisher("%s/gps/satellites_in_view" % system_name, Gpgsv, queue_size=10)
 
     # Sidescanner publishers
     # SDDBT - Depth Below Transducer
@@ -79,31 +80,39 @@ def nmea_depth_tcp():
     # SDMTW - Mean Temperature of Water
     # SDVHW - Velocity and heading in Water
     # SDHDG - Magnetic heading
-    depth_below_trans_pub = rospy.Publisher("%s/scanner/water/depth_below_transducer" % device_frame_id, DepthBelowTransducer, queue_size=10)
-    depth_water_pub = rospy.Publisher("%s/scanner/water/depth" % device_frame_id, DepthOfWater, queue_size=10)
-    temp_water_pub = rospy.Publisher("%s/scanner/water/temperature" % device_frame_id, Temperature, queue_size=10)
-    water_heading_speed_pub = rospy.Publisher("%s/scanner/water/heading_and_speed" % device_frame_id, WaterHeadingSpeed, queue_size=10)
-    mag_heading_pub = rospy.Publisher("%s/scanner/magnetic_heading" % device_frame_id, MagneticHeading, queue_size=10)
+    depth_below_trans_pub = rospy.Publisher("%s/scanner/water/depth_below_transducer" % system_name, DepthBelowTransducer, queue_size=10)
+    depth_water_pub = rospy.Publisher("%s/scanner/water/depth" % system_name, DepthOfWater, queue_size=10)
+    temp_water_pub = rospy.Publisher("%s/scanner/water/temperature" % system_name, Temperature, queue_size=10)
+    water_heading_speed_pub = rospy.Publisher("%s/scanner/water/heading_and_speed" % system_name, WaterHeadingSpeed, queue_size=10)
+    mag_heading_pub = rospy.Publisher("%s/scanner/magnetic_heading" % system_name, MagneticHeading, queue_size=10)
+
+    # Diagnostics publisher
+    diag_pub = rospy.Publisher("/diagnostics", DiagnosticArray, queue_size=10)
 
     rate = rospy.Rate(update_rate)   # Defines the publish rate
     
     rospy.loginfo("[nmea_depth_tcp] Initialization done.")
     # rospy.loginfo("[nmea_depth_tcp] Published topics:")
-    # rospy.loginfo("[nmea_depth_tcp] Sentence:\t\t\t%s/nmea_sentence" % device_frame_id)
-    # rospy.loginfo("[nmea_depth_tcp] GPS Fix:\t\t\t%s/fix" % device_frame_id)
-    # rospy.loginfo("[nmea_depth_tcp] GPS Velocity:\t\t%s/vel" % device_frame_id)
-    # rospy.loginfo("[nmea_depth_tcp] Time Reference:\t\t%s/time_reference" % device_frame_id)
-    # rospy.loginfo("[nmea_depth_tcp] Depth of Water:\t\t%s/depth/water" % device_frame_id)
-    # rospy.loginfo("[nmea_depth_tcp] Depth below transducer:\t%s/depth/below_transducer" % device_frame_id)
+    # rospy.loginfo("[nmea_depth_tcp] Sentence:\t\t\t%s/nmea_sentence" % system_name)
+    # rospy.loginfo("[nmea_depth_tcp] GPS Fix:\t\t\t%s/fix" % system_name)
+    # rospy.loginfo("[nmea_depth_tcp] GPS Velocity:\t\t%s/vel" % system_name)
+    # rospy.loginfo("[nmea_depth_tcp] Time Reference:\t\t%s/time_reference" % system_name)
+    # rospy.loginfo("[nmea_depth_tcp] Depth of Water:\t\t%s/depth/water" % system_name)
+    # rospy.loginfo("[nmea_depth_tcp] Depth below transducer:\t%s/depth/below_transducer" % system_name)
     # Run node
+    last_update = 0
     while not rospy.is_shutdown():
         try:
             nmea_in = tcp_in.makefile().readline()        
         except socket.error:
             pass
-        ros_now = rospy.Time().now()   
         nmea_parts = nmea_in.strip().split(',')
 
+        ros_now = rospy.Time().now()
+        diag_msg = DiagnosticArray()
+        diag_msg.status.append(DiagnosticStatus())
+        diag_msg.status[0].name = 'sonar'
+        diag_msg.status[0].hardware_id = '%s' % system_name
         if len(nmea_parts):
             #### GPS
             # GPS Fix position
@@ -117,7 +126,7 @@ def nmea_depth_tcp():
                 altitude = cast_float(nmea_parts[9])
                 nsf = NavSatFix()
                 nsf.header.stamp = ros_now
-                nsf.header.frame_id = device_frame_id
+                nsf.header.frame_id = system_name
                 nsf.latitude = latitude
                 nsf.longitude = longitude
                 nsf.altitude = altitude
@@ -126,7 +135,7 @@ def nmea_depth_tcp():
             # Velocity
             if nmea_parts[0] == '$GPVTG' and len(nmea_parts) >= 9:
                 vel = TwistStamped()
-                vel.header.frame_id = device_frame_id
+                vel.header.frame_id = system_name
                 vel.header.stamp = ros_now
                 vel.twist.linear.x = cast_float(nmea_parts[7]) / 3.6  # Km/h to m/s
                 vel_pub.publish(vel)
@@ -134,7 +143,7 @@ def nmea_depth_tcp():
             # Time reference (GPST)
             if nmea_parts[0] == '$GPZDA' and len(nmea_parts) >= 5:
                 tref = TimeReference()
-                tref.header.frame_id = device_frame_id
+                tref.header.frame_id = system_name
                 tref.header.stamp = ros_now
                 hour = cast_int(nmea_parts[1][0:2])
                 minute = cast_int(nmea_parts[1][2:4])
@@ -152,13 +161,13 @@ def nmea_depth_tcp():
                 except ValueError:
                     pass
                 
-                tref.source = device_frame_id
+                tref.source = system_name
                 timeref_pub.publish(tref) 
             
             # GPS DOP and active satellites
             if nmea_parts[0] == '$GPGSA' and len(nmea_parts) >= 18:
                 gsa = Gpgsa()
-                gsa.header.frame_id = device_frame_id
+                gsa.header.frame_id = system_name
                 gsa.header.stamp = ros_now
                 gsa.auto_manual_mode = nmea_parts[1]
                 gsa.fix_mode = cast_int(nmea_parts[2])
@@ -177,7 +186,7 @@ def nmea_depth_tcp():
             # GPS Satellites in View
             if nmea_parts[0] == '$GPGSV' and len(nmea_parts) >= 7:
                 gsv = Gpgsv()
-                gsv.header.frame_id = device_frame_id
+                gsv.header.frame_id = system_name
                 gsv.header.stamp = ros_now
                 gsv.n_msgs = cast_int(nmea_parts[1])
                 gsv.msg_number = cast_int(nmea_parts[2])
@@ -208,7 +217,7 @@ def nmea_depth_tcp():
             # Depth (DBT - Depth Below Transducer)
             if nmea_parts[0] == '$SDDBT' and len(nmea_parts) >= 7:
                 d = DepthBelowTransducer()
-                d.header.frame_id = device_frame_id
+                d.header.frame_id = system_name
                 d.header.stamp = ros_now
                 try:
                     d.feet = cast_float(nmea_parts[1])  # In feet
@@ -227,7 +236,7 @@ def nmea_depth_tcp():
             # Depth (DPT - DePTh of water)
             if nmea_parts[0] == '$SDDPT' and len(nmea_parts) >= 4:
                 d = DepthOfWater()
-                d.header.frame_id = device_frame_id
+                d.header.frame_id = system_name
                 d.header.stamp = ros_now
                 try:
                     d.depth = cast_float(nmea_parts[1])  # In meters
@@ -246,7 +255,7 @@ def nmea_depth_tcp():
             # SDMTW - Mean Temperature of Water
             if nmea_parts[0] == '$SDMTW' and len(nmea_parts) >= 3:
                 tempC = Temperature()
-                tempC.header.frame_id = device_frame_id
+                tempC.header.frame_id = system_name
                 tempC.header.stamp = ros_now
                 tempC.temperature = cast_float(nmea_parts[1])
                 temp_water_pub.publish(tempC)
@@ -254,7 +263,7 @@ def nmea_depth_tcp():
             # SDVHW - Water Heading and Speed
             if nmea_parts[0] == '$SDVHW' and len(nmea_parts) >= 9:
                 whs = WaterHeadingSpeed()
-                whs.header.frame_id = device_frame_id
+                whs.header.frame_id = system_name
                 whs.header.stamp = ros_now
                 whs.true_heading = cast_float(nmea_parts[1])
                 whs.mag_heading = cast_float(nmea_parts[3])
@@ -266,7 +275,7 @@ def nmea_depth_tcp():
             # SDHDG - Magnetic heading
             if nmea_parts[0] == '$SDHDG' and len(nmea_parts) >= 6:
                 hdg = MagneticHeading()
-                hdg.header.frame_id = device_frame_id
+                hdg.header.frame_id = system_name
                 hdg.header.stamp = ros_now
                 hdg.heading = cast_float(nmea_parts[1])
                 hdg.mag_dev = cast_float(nmea_parts[2])
@@ -283,11 +292,27 @@ def nmea_depth_tcp():
 
             # NMEA Sentence (published regardless of content)
             sentence_msg = Sentence()
-            sentence_msg.header.frame_id = device_frame_id
+            sentence_msg.header.frame_id = system_name
             sentence_msg.header.stamp = ros_now
             sentence_msg.sentence = nmea_in
             sentence_pub.publish(sentence_msg)
-        
+
+            diag_msg.status[0].level = DiagnosticStatus.OK
+            diag_msg.status[0].message = 'OK'
+            diag_msg.status[0].values = [KeyValue(key="Sentence", value=sentence_msg.sentence)]
+            last_update = ros_now
+
+        # Check for stale status
+        elapsed = ros_now.to_sec() - last_update.to_sec()
+        if elapsed > 35:
+            diag_msg.status[0].level = DiagnosticStatus.STALE
+            diag_msg.status[0].message = 'Stale'
+            diag_msg.status[0].values = [KeyValue(key="Update Status", value='Stale'),
+                                         KeyValue(key="Time Since Update", value=str(elapsed))]
+
+        # Publish diagnostics message
+        diag_pub.publish(diag_msg)
+
         # Node sleeps for some time
         rate.sleep()
 
