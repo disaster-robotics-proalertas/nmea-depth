@@ -60,7 +60,7 @@ def nmea_depth_tcp():
         sys.exit(0)
 
     # NMEA Sentence publisher (to publish NMEA sentence regardless of content)
-    sentence_pub = rospy.Publisher("%s/nmea_sentence" % system_name, Sentence, queue_size=10)
+    sentence_pub = rospy.Publisher("%s/sonar/nmea_sentence" % system_name, Sentence, queue_size=10)
     
     # GPS publishers
     # GPGGA - Position
@@ -68,11 +68,11 @@ def nmea_depth_tcp():
     # GPZDA - Time reference (GPST)
     # GPGSA - Active Satellites
     # GPGSV - Satellites in View
-    position_pub = rospy.Publisher("%s/gps/fix" % system_name, NavSatFix, queue_size=10)
-    vel_pub = rospy.Publisher("%s/gps/vel" % system_name, TwistStamped, queue_size=10)
-    timeref_pub = rospy.Publisher("%s/gps/time_reference" % system_name, TimeReference, queue_size=10)
-    active_sat_pub = rospy.Publisher("%s/gps/active_satellites" % system_name, Gpgsa, queue_size=10)
-    sat_view_pub = rospy.Publisher("%s/gps/satellites_in_view" % system_name, Gpgsv, queue_size=10)
+    position_pub = rospy.Publisher("%s/sonar/gps/fix" % system_name, NavSatFix, queue_size=10)
+    vel_pub = rospy.Publisher("%s/sonar/gps/vel" % system_name, TwistStamped, queue_size=10)
+    timeref_pub = rospy.Publisher("%s/sonar/gps/time_reference" % system_name, TimeReference, queue_size=10)
+    active_sat_pub = rospy.Publisher("%s/sonar/gps/active_satellites" % system_name, Gpgsa, queue_size=10)
+    sat_view_pub = rospy.Publisher("%s/sonar/gps/satellites_in_view" % system_name, Gpgsv, queue_size=10)
 
     # Sidescanner publishers
     # SDDBT - Depth Below Transducer
@@ -80,11 +80,11 @@ def nmea_depth_tcp():
     # SDMTW - Mean Temperature of Water
     # SDVHW - Velocity and heading in Water
     # SDHDG - Magnetic heading
-    depth_below_trans_pub = rospy.Publisher("%s/scanner/water/depth_below_transducer" % system_name, DepthBelowTransducer, queue_size=10)
-    depth_water_pub = rospy.Publisher("%s/scanner/water/depth" % system_name, DepthOfWater, queue_size=10)
-    temp_water_pub = rospy.Publisher("%s/scanner/water/temperature" % system_name, Temperature, queue_size=10)
-    water_heading_speed_pub = rospy.Publisher("%s/scanner/water/heading_and_speed" % system_name, WaterHeadingSpeed, queue_size=10)
-    mag_heading_pub = rospy.Publisher("%s/scanner/magnetic_heading" % system_name, MagneticHeading, queue_size=10)
+    depth_below_trans_pub = rospy.Publisher("%s/sonar/scanner/water/depth_below_transducer" % system_name, DepthBelowTransducer, queue_size=10)
+    depth_water_pub = rospy.Publisher("%s/sonar/scanner/water/depth" % system_name, DepthOfWater, queue_size=10)
+    temp_water_pub = rospy.Publisher("%s/sonar/scanner/water/temperature" % system_name, Temperature, queue_size=10)
+    water_heading_speed_pub = rospy.Publisher("%s/sonar/scanner/water/heading_and_speed" % system_name, WaterHeadingSpeed, queue_size=10)
+    mag_heading_pub = rospy.Publisher("%s/sonar/scanner/magnetic_heading" % system_name, MagneticHeading, queue_size=10)
 
     # Diagnostics publisher
     diag_pub = rospy.Publisher("/diagnostics", DiagnosticArray, queue_size=10)
