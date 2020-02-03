@@ -2,16 +2,12 @@
     <!-- Launch file for NMEA sentence parser, with GPS and depth information from Lowrance side-scanner -->
     
     <!-- Package parameters -->
-    <arg name="address" default="$(env SONAR)" />
     <arg name="port" default="10110" />
-    <arg name="frame" default="lowrance" />
     <arg name="update_rate" default="40" />
     
     <!-- Run UDP node -->
-    <node name="nmea_depth_tcp" pkg="ros_nmea_depth" type="nmea_depth_tcp.py" output="screen" >
-        <param name="~address" value="$(arg address)" />
+    <node name="nmea_depth_tcp" pkg="ros_nmea_depth" type="nmea_depth_tcp.py" output="screen" respawn="true" >
         <param name="~port" value="$(arg port)" />
-        <param name="~frame_id" value="$(arg frame)" />
         <param name="~update_rate" value="$(arg update_rate)" />
     </node>
 </launch>
