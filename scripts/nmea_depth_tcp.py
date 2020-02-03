@@ -47,9 +47,11 @@ def nmea_depth_tcp():
     rospy.loginfo("[nmea_depth_tcp] Initializing node...")
 
     # Parameters
-    tcp_addr = rospy.get_param('~address', '127.0.0.1')
     tcp_port = rospy.get_param('~port', 10110)     # Lowrance standard port
     update_rate = rospy.get_param('~update_rate', 40)   # Measurement comm rate for Lowrance (Hz)
+
+    # Get sonar IP address from hosts file
+    tcp_addr = socket.gethostbyname('sonar')
     
     # Connect TCP client to destination
     try:
@@ -57,7 +59,6 @@ def nmea_depth_tcp():
     except IOError as exp:
         rospy.logerr("Socket error: %s" % exp.strerror)
         rospy.signal_shutdown(reason="Socket error: %s" % exp.strerror)
-        sys.exit(0)
 
     # NMEA Sentence publisher (to publish NMEA sentence regardless of content)
     sentence_pub = rospy.Publisher("%s/sonar/nmea_sentence" % system_name, Sentence, queue_size=10)
@@ -319,3 +320,4 @@ def nmea_depth_tcp():
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, handle_sigint)     # Handles keyboard interrupt
     nmea_depth_tcp()   # Run node
+    tcp_in.close()
