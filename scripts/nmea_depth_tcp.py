@@ -47,11 +47,9 @@ def nmea_depth_tcp():
     rospy.loginfo("[nmea_depth_tcp] Initializing node...")
 
     # Parameters
+    tcp_addr = rospy.get_param('~address')
     tcp_port = rospy.get_param('~port', 10110)     # Lowrance standard port
     update_rate = rospy.get_param('~update_rate', 40)   # Measurement comm rate for Lowrance (Hz)
-
-    # Get sonar IP address from hosts file
-    tcp_addr = socket.gethostbyname('sonar')
     
     # Connect TCP client to destination
     try:
